@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漁生 | 南方澳聲音故事地圖</title>
+    <style>
+        :root {
+            --accent: #fbc02d;
+            --dark: #0a0a0c;
+            --blue:  #727289;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #acc1cd 0%, var(--blue) 100%);
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            color: #fff; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* ---導覽列 --- */
+        header {
+            width: 100%;
+            padding: 40px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background-color:rgba(125, 142, 158, 0.666);
+            height: 30px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 20px; }
+        .brand .title { 
+            font-size: 18px; font-weight: 900; letter-spacing: 4px; 
+            border-left: 3px solid var(--accent); padding-left: 15px;
+        }
+
+        nav { display: flex; gap: 40px; }
+        nav a {
+            color: #fff; text-decoration: none; font-size: 12px;
+            letter-spacing: 2px; transition: 0.4s;
+            position: relative; padding-bottom: 5px;
+            
+        }
+        nav a:hover, nav a.active { opacity: 1; color: var(--accent); }
+        nav a::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0;
+            height: 1px; background: var(--accent); transition: 0.4s;
+        }
+        nav a:hover::after, nav a.active::after { width: 100%; }
+
+        /* --- 裝飾性背景文字 --- */
+        .bg-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 12vw; font-weight: 900; color: rgba(255,255,255,0.02);
+            pointer-events: none; z-index: 0; white-space: nowrap;
+        }
+
+        /* --- 主容器：向下平移 --- */
+        .map-section {
+            flex: 1;
+            display: flex; justify-content: center;
+            align-items: center; padding-bottom: 40px; /* 地圖位置微調 */
+        }
+
+        .map-frame {
+            position: relative;
+            width: 85vw; height: 70vh;
+            max-width: 1300px;
+            background: #f0f2d0;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 60px 120px rgba(182, 204, 232, 0.8), inset 0 0 30px rgba(223, 158, 158, 0.03);
+            border: 1px solid rgba(114, 91, 91, 0.08);
+            z-index: 10;
+        
+        }
+
+     
+        .map-display {
+            position: relative; width: 100%; height: 100%;
+            border-radius: 30px; overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.6);
+        }
+
+        .map-img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: brightness(0.85) contrast(1.1);
+            transition: 0.5s ease;
+        }
+        .map-frame:hover .map-img { filter: brightness(0.95) contrast(1.1); }
+
+        /* --- 聲音按鈕 --- */
+        .node {
+            position: absolute;
+            display: flex; align-items: center;
+            background: #c0dae6d2; backdrop-filter: blur(15px);
+            padding: 8px 18px 8px 8px; border-radius: 100px;
+            cursor: pointer; transform: translate(-50%, -50%);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 20;
+        }
+
+        /* 播放時聲波 */
+        .node.active::before {
+            content: ''; position: absolute; inset: -3px;
+            border-radius: 100px; border: 2.5px solid var(--accent);
+            animation: ripple 1.5s infinite; z-index: -1;
+        }
+        @keyframes ripple { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+
+        .ctrl-btn {
+            width: 30px; height: 30px; background: #fffed1f1; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-right: 12px;
+        }
+
+        .play-icon { width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 11px; border-color: transparent transparent transparent var(--accent); }
+        .pause-icon { display: none; width: 10px; height: 12px; border-left: 3px solid #d34848; border-right: 3px solid  #d34848; }
+
+        .node.active { background: var(--accent); transform: translate(-50%, -50%) scale(1.1); }
+        .node.active .pause-icon { display: block; }
+        .node.active .play-icon { display: none; }
+
+        .node .label { color: #000000; font-size: 14px; font-weight: 800; white-space: nowrap; }
+        .node:hover { transform: translate(-50%, -50%) scale(1.05) translateY(-5px); }
+
+        .hint { position: absolute; bottom: 30px; right: 40px; font-size: 10px; letter-spacing: 3px; opacity: 0.3; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-text">NANFANG'AO STORY</div>
+
+    <header>
+        <div class="brand">
+            <div class="title">漁生：南方澳聲音故事地圖</div>
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="index2.html" class="active">Voice Map</a>
+        </nav>
+    </header>
+
+    <div class="map-section">
+        <div class="map-frame" id="tilt-frame">
+            <div class="map-display">
+                <img src="image/Gemini_Generated_Image_lvre03lvre03lvre.png" class="map-img" alt="Map">
+
+                <div class="node" style="top: 35%; left: 45%;" data-sound="steel">
+                    <div class="ctrl-btn"><div class="play-icon"></div><div class="pause-icon"></div></div>
+                    <span class="label">三鋼鐵工廠</span>
+                </div>
+
+                <div class="node" style="top: 65%; left: 25%;" data-sound="beach">
+                    <div class="ctrl-btn"><div class="play-icon"></div><div class="pause-icon"></div></div>
+                    <span class="label">南方澳漁港</span>
+                </div>
+
+                <div class="node" style="top: 50%; left: 60%;" data-sound="shipyard">
+                    <div class="ctrl-btn"><div class="play-icon"></div><div class="pause-icon"></div></div>
+                    <span class="label">內埤海灣</span>
+                </div>
+
+                <div class="node" style="top: 25%; left: 70%;" data-sound="harbor">
+                    <div class="ctrl-btn"><div class="play-icon"></div><div class="pause-icon"></div></div>
+                    <span class="label">全福造船廠</span>
+                </div>
+                
+                <div class="hint">EXPLORE THE SOUNDS OF THE PORT</div>
+            </div>
+        </div>
+    </div>
+   
+
+    <audio id="audio-steel" src="audio/C0009.mp3" controls style="display:none;"></audio>
+<audio id="audio-beach" src="https://www.soundjay.com/nature/ocean-wave-1.mp3"></audio>
+<audio id="audio-shipyard" src="https://www.soundjay.com/nature/sounds/fire-1.mp3"></audio>
+<audio id="audio-harbor" src="https://www.soundjay.com/nature/sounds/river-1.mp3"></audio>
+        <script>
+            
+        let currentAudio = null;
+let currentBtn = null;
+
+document.querySelectorAll('.node').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const soundId = this.getAttribute('data-sound');
+        const targetAudio = document.getElementById('audio-' + soundId);
+
+        // 如果點擊的是同一個正在播的聲音
+        if (currentAudio === targetAudio) {
+            if (targetAudio.paused) {
+                targetAudio.play();
+                this.classList.add('active');
+            } else {
+                targetAudio.pause();
+                this.classList.remove('active');
+            }
+            return;
+        }
+
+        // 如果點擊新聲音，先停止舊的
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0; // 回到開頭
+            currentBtn.classList.remove('active');
+        }
+
+        // 播放新聲音
+        targetAudio.play();
+        this.classList.add('active');
+        currentAudio = targetAudio;
+        currentBtn = this;
+
+        // --- 新增：當聲音播放結束時的處理 ---
+        targetAudio.onended = () => {
+            this.classList.remove('active');
+            currentAudio = null;
+            currentBtn = null;
+        };
+    });
+});
+    </script>
+</body>
+</html>

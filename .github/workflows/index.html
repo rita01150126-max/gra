@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漁生</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===================================================
+           🌊 漁生專屬：電影級 GSAP 沉浸式開場
+           =================================================== */
+        
+        .cover-wrapper-fullscreen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            z-index: 9999;
+            cursor: pointer;
+            background-color: #03080e; /* 深海黑藍 */
+        }
+
+        /* 左右對開封面 */
+        .banner-bg-split {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .text-left-mirror { left: 0; border-right: 1px solid rgba(255,255,255,0.03); }
+        .text-right-mirror { right: 0; }
+
+        .banner-bg-split .banner-img {
+            position: absolute;
+            top: 0;
+            width: 200%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.35) contrast(1.1);
+        }
+        .text-left-mirror .banner-img { left: 0; }
+        .text-right-mirror .banner-img { right: 0; }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(3, 8, 14, 0.4) 0%, rgba(3, 8, 14, 0.8) 100%);
+            z-index: 2;
+        }
+
+        /* 文字控制盒 */
+        .cover-content-box {
+            z-index: 10;
+            position: relative;
+            max-width: 650px;
+            padding: 0 20px;
+        }
+
+        /* 逐行進場動畫的初始狀態（交給 GSAP 控制，所以 CSS 只留基本樣式） */
+        .prologue-line {
+            font-size: 16px;
+            color: #b0c4de;
+            letter-spacing: 6px;
+            line-height: 2.4;
+            font-weight: 300;
+            margin-bottom: 5px;
+            opacity: 0; /* 預設隱形 */
+        }
+
+        .cover-center-title h1 {
+            font-size: 56px; 
+            font-weight: 900;
+            letter-spacing: 24px; 
+            color: #ffffff;
+            margin-top: 40px;
+            margin-left: 24px;
+            opacity: 0; /* 預設隱形 */
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .cover-center-title p {
+            color: #8fa3b5;
+            font-size: 11px;
+            letter-spacing: 8px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            opacity: 0; /* 預設隱形 */
+        }
+
+        /* 點擊提示 */
+        .click-hint {
+            position: absolute;
+            bottom: 50px;
+            font-size: 11px;
+            color: #5a6e7f;
+            letter-spacing: 4px;
+            z-index: 10;
+            opacity: 0;
+        }
+
+        /* ===================================================
+           原網頁元件初始設定（進入時要帶有高級的放大縮小感）
+           =================================================== */
+        header, main, .slide-num, .bg-container {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cover-wrapper-fullscreen" id="openCover">
+        <div class="banner-bg-split text-left-mirror">
+            <img src="image/IMG_1222拷貝.JPG" alt="漁生封面" class="banner-img">
+        </div>
+        <div class="banner-bg-split text-right-mirror">
+            <img src="image/IMG_1222拷貝.JPG" alt="漁生封面" class="banner-img">
+        </div>
+        
+        <div class="banner-overlay"></div>
+
+        <div class="cover-content-box">
+            <div class="prologue-line">「 討海人的命，是海給的。 」</div>
+            <div class="prologue-line">在南方澳的浪潮裡，網住的是生計，</div>
+            <div class="prologue-line">放不下的，是一輩子的漁生。</div>
+            
+            <div class="cover-center-title">
+                <h1 id="mainTitle">漁生</h1>
+                <p id="subTitle">南方澳的故事 / STORY OF NANFAOAO</p>
+            </div>
+        </div>
+        
+        <div class="click-hint" id="clickHint">⊙ 點 擊 聽 船 隻 啟 航 ⊙</div>
+    </div>
+
+
+    <div class="bg-container" id="bg-box"></div>
+
+    <header id="webHeader">
+        <div class="logo">漁生：南方澳的故事</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="index2.html">Voice Map</a>
+        </nav>
+    </header>
+
+    <main id="webMain">
+        <div class="info-panel">
+            <h4 id="s-title" class="fade">Chapter 0</h4>
+            <h1 id="m-title" class="fade">漁生：南方澳的故事</h1>
+            <p id="desc" class="fade">探索阿爾卑斯山的絕美壯麗，體驗世界頂級的自然景觀與純淨空氣。這裡的每一刻都是一幅畫。</p>
+            
+            <a href="#" id="chapter-link" class="chapter-btn fade">
+                <span>GO TO CHAPTER</span>
+                <i class="arrow-icon">→</i>
+            </a>
+        </div>
+
+        <div class="slider-wrapper">
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="card">
+                            <img src="image/IMG_1222拷貝.JPG" alt="漁生">
+                            <div class="card-info"><span>Chapter 0</span><h3>漁生</h3></div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="card">
+                            <img src="image/IMG_1133.JPG" alt="漁民篇">
+                            <div class="card-info"><span>Chapter 1</span><h3>漁民篇</h3></div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="card">
+                            <img src="image/DSC01199.jpg" alt="職人篇">
+                            <div class="card-info"><span>Chapter 2</span><h3>職人篇</h3></div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="card">
+                            <img src="image/IMG_1385拷貝.JPG" alt="食物篇">
+                            <div class="card-info"><span>Chapter 3</span><h3>食物篇</h3></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-row">
+                <div class="nav-btn" id="prev">←</div>
+                <div class="nav-btn" id="next">→</div>
+            </div>
+        </div>
+    </main>
+
+    <div class="slide-num" id="slide-num">01</div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // 1. 初始化進場動畫時間軸 (網頁一打開自動播放)
+        const introTl = gsap.timeline();
+
+        introTl.to(".prologue-line", {
+            opacity: 0.85,
+            y: 0,
+            duration: 1.2,
+            stagger: 0.4, // 關鍵：每行字體間隔 0.4 秒依序浮現
+            ease: "power2.out"
+        })
+        .to("#mainTitle", {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 1.5,
+            ease: "power3.out"
+        }, "-=0.4") // 提早 0.4 秒與開場白交錯進場
+        .to("#subTitle", {
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out"
+        }, "-=0.8")
+        .to("#clickHint", {
+            opacity: 0.6,
+            duration: 1,
+            onComplete: function() {
+                // 進場播完後，讓提示文字維持呼吸起伏
+                gsap.to("#clickHint", { opacity: 0.2, duration: 1.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+            }
+        });
+
+        // 2. 點擊穿梭故事動畫
+        const cover = document.getElementById('openCover');
+        
+        cover.addEventListener('click', () => {
+            // 建立轉場專屬時間軸
+            const outTl = gsap.timeline();
+
+            outTl.to("#clickHint", { opacity: 0, duration: 0.3 })
+            .to(".cover-content-box", {
+                scale: 1.1,
+                filter: "blur(15px)",
+                opacity: 0,
+                duration: 1,
+                ease: "power2.inOut"
+            }, 0)
+            // 門往兩側滑開，帶有完美的物理減速阻尼感 (expo.out)
+            .to(".text-left-mirror", { translateX: "-100%", duration: 1.4, ease: "expo.out" }, 0.2)
+            .to(".text-right-mirror", { translateX: "100%", duration: 1.4, ease: "expo.out" }, 0.2)
+            
+            // 同步：讓原本首頁內容以極度絲滑的「拉近淡入」方式登場
+            .to(["#webHeader", "#slide-num", "#bg-box"], {
+                opacity: 1,
+                duration: 1.5,
+                ease: "power2.out"
+            }, 0.6)
+            .fromTo("#webMain", 
+                { opacity: 0, scale: 1.06 }, // 從稍微放大的狀態
+                { opacity: 1, scale: 1, duration: 1.8, ease: "power3.out" }, // 緩緩縮回正常大小，極具官網質感
+                0.6
+            );
+
+            // 動畫播完徹底移除封面層
+            setTimeout(() => {
+                cover.style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
